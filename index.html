@@ -15,8 +15,13 @@
         <script src="js/moment.js"></script>
         <script>
             var timeFormat = 'hh:mm a';
+            
             var startTime = '7:00am';
             var endTime = moment(startTime, timeFormat).add(12, 'hours').format(timeFormat)
+            
+            var paidHours = '';
+            var salary = '';
+            var wage = '';
 
             $(function() {
                 $('#start').timepicker({
@@ -30,10 +35,39 @@
                     'showDuration': true
                 });
                 
-                $('#start, #end, #lunch, #wage').change(function() {
+                $('#start, #end').change(function() {
                     updateRange();
                     calculateShift();
-                })
+                });
+                
+                $('#paid').change(function() {
+                    paidHours = $(this).val();
+                    $('#paidHours').text('Total hours paid: ' + paidHours + ' hours')
+                });
+                
+                // comment out line to show all at once
+                $('#step2, #salary, #hourly, #calcHourly').hide();
+                
+                $('input[name=pay]').change(function() {
+                    var pay = $(this).val();
+                    if (pay == "salary") {
+                        $('#salary').show();
+                        $('#hourly').hide();
+                    } else if (pay == "hourly") {
+                        $('#hourly').show();
+                        $('#salary').hide();
+                    }
+                });
+                
+                $('#hourly_input, #paid, #start, #end').change(function() {
+                    calculateHourlyData();
+                    calculateSalaryData(true);
+                });
+                
+                $('#salary_input, #paid, #start, #end').change(function() {
+                    calculateSalaryData();
+                    calculateHourlyData(true);
+                });
             });
 
             function updateRange() {
@@ -49,26 +83,70 @@
                     var endTime = moment($('#end').val(), timeFormat);
                     var duration = moment.duration(endTime.diff(startTime));
                     var paidDuration = moment.duration(endTime.diff(startTime));
-                    if ($('#lunch').is(':checked')) {
-                        paidDuration.subtract(0.5, 'hours');
-                    }
-                    $('#hours').text('Shift length: ' + duration.asHours() + ' hours');
+                    $('#hours').text('Total shift length: ' + duration.asHours() + ' hours');
+                    $('#step2').show();
 
-                    var paidHours = paidDuration.asHours()
-                    var wage = $('#wage').val();
-                    $('#dayEarnings').text('$' + wage + ' * ' + paidHours + ' hours' + ' = $' + wage*paidHours + '/day');
-
-                    $('#weeklyEarnings').text('Weekly earnings: $' + wage*paidHours*5 + '/week');
-                    $('#annualSalary').text('Annual salary equivalent: $' + wage*paidHours*5*50 + '/year');
-
-                    // allow conversion from annual salary to hourly wage
-                    // salary / 2080 = wage
+                    paidHours = paidDuration.asHours()
+                    $('#paid').val(paidHours);
+                    $('#paidHours').text('Total hours paid: ' + paidHours + ' hours')
                 }
+            }
+            
+            function calculateHourlyData(secondary = false) {
+                if (paidHours == '') { return; }
+                
+                if (!secondary) {
+                    wage = $('#hourly_input').val();
+                } else {
+                    var truncatedWage = Math.trunc(wage*100)/100;
+                    if (value > 0) {
+                        $('#hourly_input').val(truncatedWage);
+                    }
+                }
+                salary = Math.trunc(wage*paidHours*5*52);
+                
+                if (salary != '') {
+                    $('#annualSalary').text('Annual salary equivalent: $' + salary + '/year');
+                    $('#calcHourly').show();
+                    updateConversions();
+                }
+            }
+            
+            function calculateSalaryData(secondary = false) {
+                if (paidHours == '') { return; }
+                
+                if (!secondary) {
+                    salary = $('#salary_input').val();
+                } else {
+                    if (salary > 0) {
+                        $('#salary_input').val(salary);
+                    }
+                }
+                wage = salary/52/paidHours/5;
+                
+                if (wage != '') {
+                    $('#hourlyRate').text('Hourly rate equivalent: $' + Math.trunc(wage*100)/100 + '/hour');
+                    $('#calcSalary').show();
+                    updateConversions();
+                }
+            }
+            
+            function updateConversions() {
+                var dayEarnings = Math.trunc(wage*paidHours)
+                var weeklyEarnings = Math.trunc(dayEarnings*5)
+                var monthlyEarnings = Math.trunc(salary/12)
+                var truncatedWage = Math.trunc(wage*100)/100
+                
+                $('#dayEarnings').text('$' + truncatedWage + ' * ' + paidHours + ' hours' + ' = $' + dayEarnings + '/day');
+                $('#weeklyEarnings').text('Weekly earnings: $' + weeklyEarnings + '/week');
+                $('#monthlyEarnings').text('Monthly earnings: $' + monthlyEarnings + '/month');
+                
+                $('#conversions').show()
             }
         </script> 
         <!-- End JS -->
 
-        <h2>Welcome to Paperweight</h2>
+        <h2>Paperweight - Salary Visualizer</h2>
 
         <form>
             <div>
@@ -80,26 +158,53 @@
                 <input id="end" type="text" spellcheck="false" />
             </div>
             <div id="hours"></div>
-    
-            <br>
-    
-            <div>
-                What is your hourly pay? &nbsp&nbsp
-                <span style="position: absolute; margin-left: 3px; margin-top: 1px;">$</span>
-                <input id="wage" type="number" style="padding-left: 10px; width: 160px;" value="0">
-            </div>
-            <div>
-                Subtract 30 min for an hour lunch?
-                <input id="lunch" type="checkbox" />
-            </div>
-
             <br>
             
-            <div id="dayEarnings"></div>
-            <div id="weeklyEarnings"></div>
-            <div id="annualSalary"></div>
+            <div id="step2">
+                <div>
+                    Paid hours&nbsp
+                    <input id="paid" type="number" spellcheck="false" step="0.5"/>
+                </div>
+                <div id="paidHours"></div>
+                <br>
+                <div>
+                    How are you paid? <br>
+                    <input type="radio" name="pay" value="hourly" />Hourly<br>
+                    <input type="radio" name="pay" value="salary" />Salary<br>
+                </div>
+                <br> 
+
+                <div id="hourly">
+                    <div>
+                        What is your hourly rate? &nbsp&nbsp&nbsp
+                        <span style="position: absolute; margin-left: 3px; margin-top: 1px;">$</span>
+                        <input id="hourly_input" type="text" style="padding-left: 10px; width: 100px;" />
+                    </div>
+                    <div id="calcHourly">
+                        <div id="annualSalary"></div>
+                        <br>
+                    </div>
+                </div>
+
+                <div id="salary">
+                    <div>
+                        What is your annual salary?
+                        <span style="position: absolute; margin-left: 3px; margin-top: 1px;">$</span>
+                        <input id="salary_input" type="text" style="padding-left: 10px; width: 100px;" />
+                    </div>
+                    <div id="calcSalary">
+                        <div id="hourlyRate"></div>
+                        <br>
+                    </div>
+                </div>
+                
+                <div id="conversions">
+                    <div id="dayEarnings"></div>
+                    <div id="weeklyEarnings"></div>
+                    <div id="monthlyEarnings"></div>
+                </div>
+            </div>
         </form>
-        
     </body>
 </html>
 
@@ -107,5 +212,4 @@
 h2 {
     color: rgb(41, 141, 41);
 }
-
 </style>
