@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Paperweight - Salary Tracker</title>
+        <meta name="description" content="Money is fun! Why shouldn't earning it be too?">
+        <meta name="author" content="Created by Kyle Johnson">
+        <link rel="stylesheet" href="css/jquery.timepicker.css">
+    </head>
+
+    <body>
+        <!-- Begin JS -->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="js/jquery.timepicker.js"></script>
+        <script src="js/moment.js"></script>
+        <script>
+            var timeFormat = 'hh:mm a';
+            var startTime = '7:00am';
+            var endTime = moment(startTime, timeFormat).add(12, 'hours').format(timeFormat)
+
+            $(function() {
+                $('#start').timepicker({
+                    'minTime': startTime,
+                    'maxTime': endTime
+                });
+
+                $('#end').timepicker({
+                    'minTime': startTime,
+                    'maxTime': endTime,
+                    'showDuration': true
+                });
+                
+                $('#start, #end, #lunch, #wage').change(function() {
+                    updateRange();
+                    calculateShift();
+                })
+            });
+
+            function updateRange() {
+                var startTime = moment($('#start').val(), timeFormat);
+                var endTime = moment($('#start').val(), timeFormat).add(12, 'hours');
+                $('#end').timepicker('option', 'minTime', startTime.format(timeFormat));
+                $('#end').timepicker('option', 'maxTime', endTime.format(timeFormat));
+            }
+
+            function calculateShift() {
+                if ($('#start').val() && $('#end').val()) {
+                    var startTime = moment($('#start').val(), timeFormat);
+                    var endTime = moment($('#end').val(), timeFormat);
+                    var duration = moment.duration(endTime.diff(startTime));
+                    var paidDuration = moment.duration(endTime.diff(startTime));
+                    if ($('#lunch').is(':checked')) {
+                        paidDuration.subtract(0.5, 'hours');
+                    }
+                    $('#hours').text('Shift length: ' + duration.asHours() + ' hours');
+
+                    var paidHours = paidDuration.asHours()
+                    var wage = $('#wage').val();
+                    $('#dayEarnings').text('$' + wage + ' * ' + paidHours + ' hours' + ' = $' + wage*paidHours + '/day');
+
+                    $('#weeklyEarnings').text('Weekly earnings: $' + wage*paidHours*5 + '/week');
+                    $('#annualSalary').text('Annual salary equivalent: $' + wage*paidHours*5*50 + '/year');
+
+                    // allow conversion from annual salary to hourly wage
+                    // salary / 2080 = wage
+                }
+            }
+        </script> 
+        <!-- End JS -->
+
+        <h2>Welcome to Paperweight</h2>
+
+        <form>
+            <div>
+                When does your shift start?
+                <input id="start" type="text" spellcheck="false" />
+            </div>
+            <div>
+                When does your shift end?&nbsp
+                <input id="end" type="text" spellcheck="false" />
+            </div>
+            <div id="hours"></div>
+    
+            <br>
+    
+            <div>
+                What is your hourly pay? &nbsp&nbsp
+                <span style="position: absolute; margin-left: 3px; margin-top: 1px;">$</span>
+                <input id="wage" type="number" style="padding-left: 10px; width: 160px;" value="0">
+            </div>
+            <div>
+                Subtract 30 min for an hour lunch?
+                <input id="lunch" type="checkbox" />
+            </div>
+
+            <br>
+            
+            <div id="dayEarnings"></div>
+            <div id="weeklyEarnings"></div>
+            <div id="annualSalary"></div>
+        </form>
+        
+    </body>
+</html>
+
+<style>
+h2 {
+    color: rgb(41, 141, 41);
+}
+
+</style>
