@@ -1,153 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <title>Paperweight - Salary Visualizer</title>
+        
         <meta charset="utf-8">
-        <title>Paperweight - Salary Tracker</title>
         <meta name="description" content="Money is fun! Why shouldn't earning it be too?">
-        <meta name="author" content="Created by Kyle Johnson">
-        <link rel="stylesheet" href="css/jquery.timepicker.css">
-    </head>
+        <meta name="author" content="Kyle Johnson">
 
-    <body>
-        <!-- Begin JS -->
+        <link rel="stylesheet" href="css/jquery.timepicker.css">
+        <link rel="stylesheet" href="css/paperweight.css">
+
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script src="js/jquery.timepicker.js"></script>
         <script src="js/moment.js"></script>
-        <script>
-            var timeFormat = 'hh:mm a';
-            
-            var startTime = '7:00am';
-            var endTime = moment(startTime, timeFormat).add(12, 'hours').format(timeFormat)
-            
-            var paidHours = '';
-            var salary = '';
-            var wage = '';
+        <script src="js/paperweight.js"></script>
+    </head>
 
-            $(function() {
-                $('#start').timepicker({
-                    'minTime': startTime,
-                    'maxTime': endTime
-                });
-
-                $('#end').timepicker({
-                    'minTime': startTime,
-                    'maxTime': endTime,
-                    'showDuration': true
-                });
-                
-                $('#start, #end').change(function() {
-                    updateRange();
-                    calculateShift();
-                });
-                
-                $('#paid').change(function() {
-                    paidHours = $(this).val();
-                    $('#paidHours').text('Total hours paid: ' + paidHours + ' hours')
-                });
-                
-                // comment out line to show all at once
-                $('#paySection, .salary, .hourly, #second').hide();
-                
-                $('input[name=pay]').change(function() {
-                    var pay = $(this).val();
-                    if (pay == "salary") {
-                        $('.salary').show();
-                        $('.hourly').hide();
-                    } else if (pay == "hourly") {
-                        $('.hourly').show();
-                        $('.salary').hide();
-                    }
-                });
-                
-                $('#hourly_input, #paid, #start, #end').change(function() {
-                    calculateHourlyData();
-                    calculateSalaryData(true);
-                });
-                
-                $('#salary_input, #paid, #start, #end').change(function() {
-                    calculateSalaryData();
-                    calculateHourlyData(true);
-                });
-            });
-
-            function updateRange() {
-                var startTime = moment($('#start').val(), timeFormat);
-                var endTime = moment($('#start').val(), timeFormat).add(12, 'hours');
-                $('#end').timepicker('option', 'minTime', startTime.format(timeFormat));
-                $('#end').timepicker('option', 'maxTime', endTime.format(timeFormat));
-            }
-
-            function calculateShift() {
-                if ($('#start').val() && $('#end').val()) {
-                    var startTime = moment($('#start').val(), timeFormat);
-                    var endTime = moment($('#end').val(), timeFormat);
-                    var duration = moment.duration(endTime.diff(startTime));
-                    var paidDuration = moment.duration(endTime.diff(startTime));
-                    $('#hours').text('Total shift length: ' + duration.asHours() + ' hours');
-                    $('#paySection').show();
-
-                    paidHours = paidDuration.asHours()
-                    $('#paid').val(paidHours);
-                    $('#paidHours').text('Total hours paid: ' + paidHours + ' hours')
-                }
-            }
-            
-            function calculateHourlyData(secondary = false) {
-                if (paidHours == '') { return; }
-                
-                if (!secondary) {
-                    wage = $('#hourly_input').val();
-                } else {
-                    var truncatedWage = Math.trunc(wage*100)/100;
-                    if (truncatedWage > 0) {
-                        $('#hourly_input').val(truncatedWage);
-                    }
-                    $('#annualSalary').hide();
-                }
-                salary = Math.trunc(wage*paidHours*5*52);
-                
-                if (salary != '') {
-                    $('#annualSalary').text('Annual salary equivalent: $' + salary + '/year');
-                    updateConversions();
-                    $('#second').show()
-                }
-            }
-            
-            function calculateSalaryData(secondary = false) {
-                if (paidHours == '') { return; }
-                
-                if (!secondary) {
-                    salary = $('#salary_input').val();
-                } else {
-                    if (salary > 0) {
-                        $('#salary_input').val(salary);
-                    }
-                    $('#hourlyRate').hide();
-                }
-                wage = salary/52/paidHours/5;
-                
-                if (wage != '') {
-                    $('#hourlyRate').text('Hourly rate equivalent: $' + Math.trunc(wage*100)/100 + '/hour');
-                    updateConversions();
-                    $('#second').show()
-                }
-            }
-            
-            function updateConversions() {
-                var dayEarnings = Math.trunc(wage*paidHours)
-                var weeklyEarnings = Math.trunc(dayEarnings*5)
-                var monthlyEarnings = Math.trunc(salary/12)
-                var truncatedWage = Math.trunc(wage*100)/100
-                
-                $('#dayEarnings').text('$' + truncatedWage + ' * ' + paidHours + ' hours' + ' = $' + dayEarnings + '/day');
-                $('#weeklyEarnings').text('Weekly earnings: $' + weeklyEarnings + '/week');
-                $('#monthlyEarnings').text('Monthly earnings: $' + monthlyEarnings + '/month');
-                
-                $('#conversions').show()
-            }
-        </script> 
-        <!-- End JS -->
-
+    <body>
         <h2>Paperweight - Salary Visualizer</h2>
 
         <div id="container">
@@ -208,45 +77,3 @@
         </div>
     </body>
 </html>
-
-<style>
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
-
-body {
-    margin-left: 30px;
-    font-family: 'Open Sans', sans-serif;
-    color: white;
-}
-input {
-    font-size: medium;
-    margin-top: 2px;
-    margin-bottom: 5px;
-}
-#start, #end, #paid {
-    width: 103px;
-}
-#container {
-    display: flex;
-    flex-wrap: wrap;
-}
-h2 {
-    color: rgb(41, 141, 41);
-}
-form {
-    display: inline-block;
-    background-color: rgb(41, 141, 41);
-    padding: 20px;
-    border-radius: 10px;
-    width: 300px;
-    height: 386px;
-    margin-right: 20px;
-    margin-bottom: 20px;
-    flex-shrink: 0;
-    
-}
-#second {
-    background-color: rgb(136, 136, 136);
-    height: 110px;
-}
-
-</style>
