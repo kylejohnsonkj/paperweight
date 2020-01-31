@@ -13,6 +13,7 @@
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script src="js/jquery.timepicker.js"></script>
         <script src="js/moment.js"></script>
+        <script src="js/progressbar.js"></script>
         <script src="js/paperweight.js"></script>
     </head>
 
@@ -47,19 +48,15 @@
                     <br> 
     
                     <div class="hourly">
-                        <div>
-                            What is your hourly rate? &nbsp&nbsp&nbsp<br>
-                            <span style="position: absolute; margin-left: 3px; margin-top: 1px; color: black;">$</span>
-                            <input id="hourly_input" type="text" style="padding-left: 10px; width: 100px; " />
-                        </div>
+                        What is your hourly rate? &nbsp&nbsp&nbsp<br>
+                        <span class="dollar">$</span>
+                        <input id="hourly_input" type="text" style="padding-left: 10px; width: 100px; " />
                     </div>
     
                     <div class="salary">
-                        <div>
-                            What is your annual salary?<br>
-                            <span style="position: absolute; margin-left: 3px; margin-top: 1px; color: black;">$</span>
-                            <input id="salary_input" type="text" style="padding-left: 10px; width: 100px;" />
-                        </div>
+                        What is your annual salary?<br>
+                        <span class="dollar">$</span>
+                        <input id="salary_input" type="text" style="padding-left: 10px; width: 100px;" />
                     </div>
                 </div>
             </form>
@@ -72,7 +69,19 @@
                     <div id="dayEarnings"></div>
                     <div id="weeklyEarnings"></div>
                     <div id="monthlyEarnings"></div>
+                    <br>
+                    <div id="paycheckEstimate"></div>
                 </div>
+            </form>
+
+            <form id="third">
+                <div id="currentTime">Current Time:</div>
+                <div id="timeWorked">Time Worked:</div>
+                <div id="percentComplete">Percentage Complete:</div>
+                <br>
+                <div id="profit">Profit:</div>
+                <br>
+                <div id="progressbar"></div>
             </form>
         </div>
     </body>
